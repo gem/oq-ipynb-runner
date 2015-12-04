@@ -9,15 +9,11 @@ from pprint import pprint
 
 
 def run_cell(kc, cell, tout):
-    print
-    print "RUN CELL"
     retval = kc.execute(cell.input)
 
-    # wait for finish, maximum 20s
     retval = kc.get_shell_msg(timeout=tout)
 
-    print "STATUS [%s]" % retval['content']['status']
-    pprint(retval)
+    print "CONTENT_STATUS: %s" % retval['content']['status']
     if retval['content']['status'] == 'error':
         print "ENAME: "
         pprint(retval['content']['ename'])
@@ -32,25 +28,16 @@ def run_cell(kc, cell, tout):
         try:
             msg = kc.get_iopub_msg(timeout=1)
         except Empty:
-            kc.kernel_info()
-            continue
-        print "STARTWHILE"
+            break
         msg_type = msg['msg_type']
-        if msg_type == 'status':
-            if msg['content']['execution_state'] == 'idle':
-                print "PIPPO VIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                break
-            else:
-                print "MOP STATUS: [%s]" % msg['content']['execution_state'] 
-            continue
-        elif msg_type in ('status', 'execute_input'):
+        if msg_type in ('status', 'execute_input'):
             continue
         elif msg_type == 'execute_input':
             continue
         elif msg_type == 'clear_output':
             outs = []
             continue
-        
+
         content = msg['content']
         # print msg_type, content
         out = NotebookNode(output_type=msg_type)
@@ -76,10 +63,6 @@ def run_cell(kc, cell, tout):
         print "msg_type: %s" % msg_type
         outs.append(out)
 
-        if msg_type in ('execute_result', 'error'):
-            print "RESULT: %s" % msg_type
-
-    print "FINISH CELL"
     return outs
 
 
