@@ -2,10 +2,10 @@
 
 import os
 import sys
+from pprint import pprint
 from jupyter_client import KernelManager
 from Queue import Empty
 from nbformat import NotebookNode, reads
-from pprint import pprint
 
 
 def run_cell(kc, cell, tout):
@@ -66,13 +66,17 @@ def run_cell(kc, cell, tout):
     return outs
 
 
-def test_notebook(nb):
+def test_notebook(notebook):
+    f = open(notebook)
+    if not f:
+        return False
+    nb = reads(f.read(), 3)
+
     km = KernelManager()
     km.start_kernel(extra_arguments=['--pylab=inline'],
                     stderr=open('/tmp/km.stderr', 'w'))
     kc = km.client()
     kc.start_channels()
-    iopub = kc.iopub_channel
     shell = kc.shell_channel
 
     shell.get_msg()
@@ -120,6 +124,10 @@ def test_notebook(nb):
     km.shutdown_kernel()
     del km
 
+    if failures > 0 or errors > 0:
+        return False
+    else:
+        return True
 
 def get_ipnb(spath):
     li = []
@@ -127,24 +135,26 @@ def get_ipnb(spath):
         if spath.endswith('.ipynb'):
             li.append(spath)
             return li
-
+    elif os.path.isdir(spath):
+        if os.path.basename(spath) == '.ipynb_checkpoints':
+            return li
     for root, subf, fnames in os.walk(spath):
+        if os.path.basename(root) == '.ipynb_checkpoints':
+            continue
         for fname in fnames:
             if fname.endswith('.ipynb'):
                 li.append(os.path.join(root, fname))
     return li
 
 
-def main(argv):
+def test_notebooks(paths):
     notebooks = []
 
-    for f in argv:
+    for f in paths:
         notebooks += get_ipnb(f)
 
     for notebook in notebooks:
-        with open(notebook) as f:
-            nb = reads(f.read(), 3)
-            test_notebook(nb)
+        test_notebook(notebook)
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    test_notebooks(sys.argv[1:])
