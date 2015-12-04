@@ -26,7 +26,7 @@ def run_cell(kc, cell, tout):
     outs = []
     while True:
         try:
-            msg = kc.get_iopub_msg(timeout=1)
+            msg = kc.get_iopub_msg(timeout=0.5)
         except Empty:
             break
         msg_type = msg['msg_type']
@@ -44,7 +44,7 @@ def run_cell(kc, cell, tout):
 
         if msg_type == 'stream':
             out.stream = content['name']
-            out.text = content['data']
+            out.text = content['text']
         elif msg_type in ('display_data', 'execute_result'):
             out['metadata'] = content['metadata']
             for mime, data in content['data'].iteritems():
@@ -67,7 +67,6 @@ def run_cell(kc, cell, tout):
 
 
 def test_notebook(nb):
-    print "NB1 [%s]" % nb
     km = KernelManager()
     km.start_kernel(extra_arguments=['--pylab=inline'],
                     stderr=open('/tmp/km.stderr', 'w'))
@@ -77,8 +76,6 @@ def test_notebook(nb):
     shell = kc.shell_channel
 
     shell.get_msg()
-
-    print "NB [%s]" % nb
 
     successes = 0
     failures = 0
@@ -139,7 +136,6 @@ def get_ipnb(spath):
 
 
 def main(argv):
-    print "MAIN begin"
     notebooks = []
 
     for f in argv:
