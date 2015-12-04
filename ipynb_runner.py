@@ -60,13 +60,13 @@ def run_cell(kc, cell, tout):
             out.traceback = content['traceback']
         else:
             print "unhandled iopub msg:", msg_type
-        print "msg_type: %s" % msg_type
+        # print "msg_type: %s" % msg_type
         outs.append(out)
 
-    return outs
+    return retval['content']['status'], outs
 
 
-def test_notebook(notebook):
+def run_notebook(notebook):
     f = open(notebook)
     if not f:
         return False
@@ -89,7 +89,7 @@ def test_notebook(notebook):
             if cell.cell_type != 'code':
                 continue
             try:
-                outs = run_cell(kc, cell, 30)
+                status, outs = run_cell(kc, cell, 30)
 
             except Exception as e:
                 print "failed to run cell:", repr(e)
@@ -99,19 +99,18 @@ def test_notebook(notebook):
                 continue
 
             failed = False
-            print "Count outs: %d" % len(outs)
-            print "Count cell_out: %d" % len(cell.outputs)
+            # print "Count outs: %d" % len(outs)
+            # print "Count cell_out: %d" % len(cell.outputs)
             for out, ref in zip(outs, cell.outputs):
                 print "OUT[%s]" % outs
                 print "EXP[%s]" % ref
                 #if not compare_outputs(out, ref):
                 #    failed = True
                 #    break
-            if failed:
+            if status != "ok" or failed:
                 failures += 1
             else:
                 successes += 1
-            sys.stdout.write('.')
 
     print
     print "tested notebook %s" % nb.metadata.name
@@ -128,6 +127,7 @@ def test_notebook(notebook):
         return False
     else:
         return True
+
 
 def get_ipnb(spath):
     li = []
@@ -147,14 +147,14 @@ def get_ipnb(spath):
     return li
 
 
-def test_notebooks(paths):
+def run_notebooks(paths):
     notebooks = []
 
     for f in paths:
         notebooks += get_ipnb(f)
 
     for notebook in notebooks:
-        test_notebook(notebook)
+        run_notebook(notebook)
 
 if __name__ == '__main__':
-    test_notebooks(sys.argv[1:])
+    run_notebooks(sys.argv[1:])
