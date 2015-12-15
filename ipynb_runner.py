@@ -106,6 +106,7 @@ def run_notebook(notebook):
                 status, outs = run_cell(kc, cell, 30)
 
             except Exception as e:
+                # currently turned off to avoid jenkins hang
                 # print "failed to run cell:", repr(e)
                 # print cell.input
                 # print dir(cell)
@@ -113,6 +114,7 @@ def run_notebook(notebook):
                 continue
 
             failed = False
+            # currently turned off to avoid jenkins hang
             # print "Count outs: %d" % len(outs)
             # print "Count cell_out: %d" % len(cell.outputs)
             #for out, ref in zip(outs, cell.outputs):
