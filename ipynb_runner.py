@@ -1,4 +1,18 @@
 #!/usr/bin/env ipython
+# Copyright (c) 2015, GEM Foundation.
+#
+# OpenQuake ipynb_runner is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# OpenQuake is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with OpenQuake.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import sys
@@ -92,21 +106,23 @@ def run_notebook(notebook):
                 status, outs = run_cell(kc, cell, 30)
 
             except Exception as e:
-                print "failed to run cell:", repr(e)
+                # currently turned off to avoid jenkins hang
+                # print "failed to run cell:", repr(e)
                 # print cell.input
-                print dir(cell)
+                # print dir(cell)
                 errors += 1
                 continue
 
             failed = False
+            # currently turned off to avoid jenkins hang
             # print "Count outs: %d" % len(outs)
             # print "Count cell_out: %d" % len(cell.outputs)
-            for out, ref in zip(outs, cell.outputs):
-                print "OUT[%s]" % outs
-                print "EXP[%s]" % ref
-                #if not compare_outputs(out, ref):
-                #    failed = True
-                #    break
+            #for out, ref in zip(outs, cell.outputs):
+            #    print "OUT[%s]" % outs
+            #    print "EXP[%s]" % ref
+            #    #if not compare_outputs(out, ref):
+            #    #    failed = True
+            #    #    break
             if status != "ok" or failed:
                 failures += 1
             else:
